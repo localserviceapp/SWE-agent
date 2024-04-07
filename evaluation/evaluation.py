@@ -29,13 +29,26 @@ def analyze_with_gemini(issue_description, code_snippet, patch):
     * Process Gemini's response (tests, logic analysis, style suggestions)
     * Return a structured output in the format we discussed earlier (e.g., JSON)
     """
-    # Your implementation here
+    # Placeholder for now - replace this with your Gemini interaction logic
+    gemini_output = {
+        "logic_check": "Gemini's analysis of the patch logic...",
+        "style_suggestions": "Gemini's suggestions for readability...",
+        "additional_tests": "Gemini's generated tests..."
+    }
+    return gemini_output
 
-def get_relevant_code(swe_bench_tasks, task_id):
-    """
-    Extract the relevant code snippet from the SWE-bench tasks.
-    """
-    # Your implementation here
+def get_relevant_code(eval_sm, task_id):
+    # 1. Access task details (might need adjustment based on SWE-bench)
+    task_data = eval_sm['tasks'][task_id]  # Assuming tasks are stored in a dictionary
+
+    # 2. Extract code snippet based on task type (replace with logic specific to your tasks)
+    if task_data['type'] == 'CODING':  # Example check for coding tasks
+        code_snippet = task_data['code']  # Assuming code is stored in a 'code' key  
+    else:
+        # Handle other task types if applicable
+        code_snippet = None
+    return code_snippet
+
 
 def main(predictions_path, log_dir, swe_bench_tasks, testbed, skip_existing, timeout, verbose, conda_link, log_suffix, num_processes):
     # Check if paths exist
@@ -154,19 +167,29 @@ def main(predictions_path, log_dir, swe_bench_tasks, testbed, skip_existing, tim
             continue
 
         # Get evaluation logs
-        eval_sm, found = get_logs_eval(log_path)
+    eval_sm, found = get_logs_eval(log_path)
 
-        # Check that the prediction generated
-        if not found:
-            scorecards.append(scorecard)
-            continue
-        scorecard["statuses"].append("applied")
+    # Check that the prediction generated
+    if not found:
+        scorecards.append(scorecard)
+        continue
+    scorecard["statuses"].append("applied")
 
-        with open(log_path, "r") as f:
-            log_contents = f.read()
-            if INSTALL_FAIL in log_contents:
-                scorecard["statuses"].append("install_fail")
+    # ***Gemini Integration Point***
+    gemini_output = analyze_with_gemini(
+                         issue_description=p['problem_statement'], 
+                         code_snippet=relevant_code, # Extract from eval_sm or elsewhere
+                         patch=p[KEY_PREDICTION] 
+                     )
 
+    with open(log_path, "a") as f:  # Append to the log file
+        f.write("\n# Gemini-Logic-Check:\n")
+        f.write(gemini_output["logic_check"] + "\n")
+        f.write("\n# Gemini-Style-Suggestion:\n")
+        f.write(gemini_output["style_suggestions"] + "\n")
+        f.write("\n# Gemini-Test-Additions:\n")
+        f.write(gemini_output["additional_tests"] + "\n")
+        
         # Get resolution status
         report = get_eval_report(eval_sm, eval_refs[p[KEY_INSTANCE_ID]])
         scorecard["test_results"] = {
