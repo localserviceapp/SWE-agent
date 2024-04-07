@@ -38,14 +38,6 @@ def get_relevant_code(swe_bench_tasks, task_id):
     # Your implementation here
 
 def main(predictions_path, log_dir, swe_bench_tasks, testbed, skip_existing, timeout, verbose, conda_link, log_suffix, num_processes):
-    if __name__ == "__main__":
-    # Parse arguments (likely using argparse)
-    parser = argparse.ArgumentParser()  
-    # ... add your arguments ...
-    args = parser.parse_args()
-
-    # Call the main function with parsed arguments
-    main(**vars(args)) 
     # Check if paths exist
     if not os.path.exists(predictions_path):
         raise FileNotFoundError(f"Predictions path {predictions_path} does not exist")
