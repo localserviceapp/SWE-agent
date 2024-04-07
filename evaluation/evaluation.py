@@ -48,9 +48,23 @@ def main(predictions_path, log_dir, swe_bench_tasks, testbed, skip_existing, tim
                 json.dump(p, f)
                 f.write("\n")
                 pred_will_eval += 1
+
+                # *** Gemini Integration Point Begins ***
+                task_id = p['task_id']  # Assuming there's a task ID in the prediction 
+                issue_description = p['problem_statement']  
+                code_snippet = get_relevant_code(swe_bench_tasks, task_id)  # You'll need to implement this
+                patch = p[KEY_PREDICTION]
+
+                gemini_output = analyze_with_gemini(issue_description, code_snippet, patch)
+
+                # Store Gemini's output (modify if needed)
+                p['gemini_analysis'] = gemini_output
+                # *** Gemini Integration Ends ***
+
     print(
         f"Found {pred_total} total predictions, will evaluate {pred_will_eval} ({pred_total-pred_will_eval} are empty)"
     )
+
 
     # Run evaluation
     predictions_path = pred_path_temp
